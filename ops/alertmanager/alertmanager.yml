@@ -1,0 +1,16 @@
+# Alertmanager delivers Prometheus alerts to Bamboo11y's normalized webhook endpoint.
+# This is the same endpoint a real Alertmanager would call; nothing here is special-cased
+# for the demo.
+route:
+  receiver: bamboo11y
+  group_by: [alertname, service, environment]
+  group_wait: 5s
+  group_interval: 30s
+  repeat_interval: 4h
+
+receivers:
+  - name: bamboo11y
+    webhook_configs:
+      - url: http://bamboo11y:8000/api/webhooks/alerts/prometheus
+        send_resolved: true
+        max_alerts: 20

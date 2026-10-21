@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Fast local gate. Full verification remains `make check` (and CI).
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+staged="$(git diff --cached --name-only)"
+if [[ -z "$staged" ]]; then
+  exit 0
+fi
+
+forbidden="$(printf '%s\n' "$staged" | grep -E '^(\.env$|data/|frontend/dist/|frontend/node_modules/)|\.(db|sqlite|sqlite3)$' || true)"
+if [[ -n "$forbidden" ]]; then
+  echo "pre-commit: refusing to commit runtime data or secrets:" >&2
+  printf '  %s\n' $forbidden >&2
+  echo "Remove them from the index (git restore --staged <path>) and retry." >&2
+  exit 1
+fi
+
+mapfile -t python_files < <(printf '%s\n' "$staged" | grep -E '\.py$' || true)
+if (( ${#python_files[@]} > 0 )); then
+  if [[ ! -x .venv/bin/ruff ]]; then
+    echo "pre-commit: .venv/bin/ruff is missing. Run 'make setup'." >&2
+    exit 1
+  fi
+  .venv/bin/ruff check "${python_files[@]}"
+  .venv/bin/ruff format --check "${python_files[@]}"
+fi
+
+frontend_changed="$(printf '%s\n' "$staged" | grep -E '^frontend/(src|test)/|^frontend/(package(-lock)?\.json|tsconfig\.json|vite\.config\.ts|eslint\.config\.js)$' || true)"
+if [[ -n "$frontend_changed" ]]; then
+  if [[ ! -d frontend/node_modules ]]; then
+    echo "pre-commit: frontend dependencies are missing. Run 'make setup'." >&2
+    exit 1
+  fi
+  (cd frontend && npm run lint -- --quiet && npm run typecheck)
+fi
+
+echo "pre-commit: checks passed."

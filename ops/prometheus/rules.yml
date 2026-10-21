@@ -1,0 +1,41 @@
+# Example alert rules. These alert on Bamboo11y's own operational metrics, proving
+# the round trip: Prometheus -> Alertmanager -> Bamboo11y webhook.
+groups:
+  - name: bamboo11y-operations
+    rules:
+      - alert: Bamboo11yActiveIncidents
+        expr: bamboo11y_incidents_active > 0
+        for: 2m
+        labels:
+          service: bamboo11y
+          environment: production
+          severity: warning
+        annotations:
+          summary: Bamboo11y has active incidents
+          description: >-
+            {{ $value }} incidents are open or acknowledged. This alert intentionally
+            feeds back into Bamboo11y to demonstrate the ingestion path.
+      - alert: Bamboo11yHighErrorRate
+        expr: >-
+          sum(rate(bamboo11y_http_requests_total{status_class="5xx"}[5m]))
+          /
+          clamp_min(sum(rate(bamboo11y_http_requests_total[5m])), 0.001)
+          > 0.05
+        for: 5m
+        labels:
+          service: bamboo11y
+          environment: production
+          severity: critical
+        annotations:
+          summary: Bamboo11y API 5xx ratio is above 5%
+          description: "Current 5xx ratio: {{ $value | humanizePercentage }}."
+      - alert: Bamboo11yNoWebhookTraffic
+        expr: sum(rate(bamboo11y_webhook_requests_total[10m])) == 0
+        for: 30m
+        labels:
+          service: bamboo11y
+          environment: production
+          severity: low
+        annotations:
+          summary: No webhook traffic in the last 30 minutes
+          description: Check webhook configuration and upstream alert sources.

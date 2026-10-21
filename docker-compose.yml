@@ -1,0 +1,78 @@
+name: bamboo11y
+
+services:
+  bamboo11y:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bamboo11y:local
+    container_name: bamboo11y
+    ports:
+      - "127.0.0.1:${BAMBOO11Y_PORT:-8000}:8000"
+    environment:
+      BAMBOO11Y_ENVIRONMENT: container
+      BAMBOO11Y_DATABASE_URL: sqlite:////data/bamboo11y.db
+      BAMBOO11Y_SERVICE_CATALOG_PATH: /app/config/services.yaml
+      BAMBOO11Y_STATIC_DIR: /app/frontend/dist
+      BAMBOO11Y_LOG_JSON: "true"
+      BAMBOO11Y_RATE_LIMIT_PER_MINUTE: ${BAMBOO11Y_RATE_LIMIT_PER_MINUTE:-120}
+      BAMBOO11Y_NOTIFICATION_WEBHOOK_URL: ${BAMBOO11Y_NOTIFICATION_WEBHOOK_URL:-}
+    volumes:
+      - bamboo11y-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    profiles: ["observability"]
+    container_name: bamboo11y-prometheus
+    depends_on:
+      bamboo11y:
+        condition: service_healthy
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.34.1
+    profiles: ["observability"]
+    container_name: bamboo11y-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    ports:
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    restart: unless-stopped
+
+volumes:
+  bamboo11y-data:
+  prometheus-data:
+  alertmanager-data:

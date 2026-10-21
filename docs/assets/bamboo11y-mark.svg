@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Bamboo11y mark">
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#131c26"/>
+      <stop offset="1" stop-color="#080c11"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f2b45c"/>
+      <stop offset="1" stop-color="#ffca80"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="17" fill="url(#surface)" stroke="#2a3746" stroke-width="1.5"/>
+  <path d="M11 39.5 21 28l8 7.2L36.5 18l7 12H53"
+        fill="none" stroke="url(#signal)" stroke-width="3.4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="21" cy="28" r="3.4" fill="#ffca80"/>
+  <circle cx="36.5" cy="18" r="3.4" fill="#ffca80"/>
+</svg>

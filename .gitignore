@@ -1,0 +1,42 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# Runtime data and databases
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+*.log
+
+# Claude/agent local overrides (project guidance is committed)
+.claude/settings.local.json

@@ -1,0 +1,108 @@
+# Bamboo11y service catalog
+#
+# `depends_on` means "this service calls that service" (downstream dependency).
+# A service listed here must also exist in this file. Environment names are free-form,
+# but keeping them consistent with webhook labels makes enrichment and changes useful.
+#
+# Edit this file, then restart the API to reload the catalog.
+version: 1
+services:
+  - id: edge-gateway
+    name: Edge Gateway
+    description: Public ingress, authentication, and request routing for all storefront traffic.
+    owner: Edge Platform
+    team: edge-platform
+    tier: critical
+    environments: [production, staging]
+    depends_on: [checkout-api, catalog-api]
+    repository: example/edge-gateway
+
+  - id: checkout-api
+    name: Checkout API
+    description: Cart validation, order orchestration, and checkout session management.
+    owner: Checkout Experience
+    team: checkout-experience
+    tier: critical
+    environments: [production, staging]
+    depends_on: [payments-api, inventory-api, redis-sessions]
+    repository: example/checkout-api
+
+  - id: payments-api
+    name: Payments API
+    description: Authorizes and captures payments; owns the payment-intent state machine.
+    owner: Payments Platform
+    team: payments-platform
+    tier: critical
+    environments: [production, staging]
+    depends_on: [postgres-orders, fraud-check]
+    repository: example/payments-api
+
+  - id: inventory-api
+    name: Inventory API
+    description: Stock reservation and availability checks across fulfillment centers.
+    owner: Inventory Engineering
+    team: inventory-eng
+    tier: high
+    environments: [production, staging]
+    depends_on: [postgres-orders]
+    repository: example/inventory-api
+
+  - id: catalog-api
+    name: Catalog API
+    description: Product metadata, pricing, and merchandising reads.
+    owner: Catalog Engineering
+    team: catalog-eng
+    tier: high
+    environments: [production, staging]
+    depends_on: [search-api]
+    repository: example/catalog-api
+
+  - id: search-api
+    name: Search API
+    description: Product search, ranking, and recommendations.
+    owner: Search Relevance
+    team: search-relevance
+    tier: high
+    environments: [production, staging]
+    depends_on: []
+    repository: example/search-api
+
+  - id: notifications-worker
+    name: Notifications Worker
+    description: Asynchronous email and push delivery with retry and dead-letter handling.
+    owner: Messaging Platform
+    team: messaging-platform
+    tier: medium
+    environments: [production, staging]
+    depends_on: [redis-sessions]
+    repository: example/notifications-worker
+
+  - id: fraud-check
+    name: Fraud Check
+    description: Risk scoring and payment fraud decisioning.
+    owner: Trust & Safety
+    team: trust-safety
+    tier: high
+    environments: [production, staging]
+    depends_on: []
+    repository: example/fraud-check
+
+  - id: postgres-orders
+    name: Orders PostgreSQL
+    description: Primary transactional database for orders and payment intents.
+    owner: Data Platform
+    team: data-platform
+    tier: critical
+    environments: [production, staging]
+    depends_on: []
+    repository: example/orders-postgres
+
+  - id: redis-sessions
+    name: Session Redis
+    description: Low-latency checkout and notification session state.
+    owner: Data Platform
+    team: data-platform
+    tier: high
+    environments: [production, staging]
+    depends_on: []
+    repository: example/session-redis
