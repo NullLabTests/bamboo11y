@@ -150,7 +150,7 @@ minimal reproduction. Do not test against systems you do not own. No bug bounty 
 ## 9. Known limitations
 
 - The local environment had no Docker daemon, so Compose orchestration was not run. The image
-  is built and smoke-tested by CI (run `39692358695`); a local `docker compose up` remains
+  is built and smoke-tested by CI (run `39696424654`); a local `docker compose up` remains
   the strongest remaining verification.
 - GitHub Actions and dependency versions can change; re-run CI before relying on an old run.
 - The secret scan is a guardrail, not a substitute for GitHub secret scanning or a dedicated

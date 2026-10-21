@@ -60,22 +60,22 @@ gate that a new contributor can use.
 
 Recorded from the executed gates. Docker was unavailable locally, and the container path is
 **exercised by CI**: job `Container build` builds the multi-stage image and smoke-tests
-`/readyz` on run 39692358695 (green). Compose orchestration itself has not been executed
+`/readyz` on run `39696424654` (green). Compose orchestration itself has not been executed
 anywhere.
 
 | Gate | Result |
 |---|---|
 | `ruff check backend scripts` + `ruff format --check` | Clean |
-| `pytest backend/tests -q` | **57 passed** |
+| `pytest backend/tests -q` | **57 passed** (49 base pipeline + 8 open-integration adapter tests) |
 | `npm run lint` (ESLint) + `tsc --noEmit` | Clean |
 | Vitest behavior tests | **8 passed** |
 | `npm run build` (Vite production) | Success (~325 kB JS / ~36 kB CSS) |
 | `scripts/validate_config.py` | Catalog, settings, Compose, CI, secret scan all valid |
-| CI run `39692358695` | Backend 3.12 ✓ / 3.13 ✓ / Frontend ✓ / Configuration ✓ / **Container build + `/readyz` smoke ✓** |
-| Live smoke on clean DB | `/readyz` ready; demo produced 6 received / 5 unique / 1 duplicate / 3 incidents / 3 notifications; primary incident 3 alerts across 2 sources; payment change 6.0 min before first alert; unrelated incidents 2; reset removed only demo rows, live incident stayed |
-| Idempotency probe | Repeat webhook return 200 duplicate → same alert row, no new incident/notification |
+| CI on first push | Run `39696424654`: Backend 3.12 ✓ / 3.13 ✓ / Frontend ✓ / Configuration ✓ / **Container build + `/readyz` smoke ✓** |
+| Live smoke on clean DB | `/readyz` ready; demo produced 6 received / 5 unique / 1 duplicate / 3 incidents / 3 notifications; primary incident 3 alerts across 2 sources; payment change 6.0 min before first alert; open-integration adapter live: 201 → inbox; `--repeat 3` → 3 × HTTP 200 with 1 duplicate each |
+| Idempotency probe | Repeat webhook return 200 duplicate → same alert row, no new incident/notification (also verified live for the open-integration adapter) |
 | Lifecycle probe | Ack → resolve with notes; distinct audit events, one notification each; duplicate actions no-op |
-| Review pass | Fresh read-only review (self-run; the spawned reviewer agent was rate-limited): ingestion/correlation/lifecycle/security/delivery checked; no blocking findings. No TODO/stub markers, no committed secrets, no vendor branding in tracked files. |
+| Review pass | Fresh read-only review (self-run; the spawned reviewer agent was rate-limited): ingestion/correlation/lifecycle/security/delivery checked; no blocking findings. No TODO/stub markers, no committed secrets. Third-party usage is ideas-only with explicit non-affiliation notes ([`inspirations.md`](inspirations.md)); no third-party code, schemas, or brand assets copied. |
 
 Bugs and defects caught and fixed along the way:
 
